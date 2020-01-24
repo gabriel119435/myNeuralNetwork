@@ -72,6 +72,7 @@ class Network:
               .format(iterations, mini_batch_size, learning_rate, reg, early_stopping))
 
         new_validate_result, old_validate_result = None, None
+        new_train_result, old_train_result = None, None
         iterations_without_improvement = 0
 
         for i in range(iterations):
@@ -88,12 +89,13 @@ class Network:
             # just formatting strings
             print("iteration={: <3} {{{}}} {{{}}}".format(
                 i,
-                build_string("train", train_result),
+                build_string("train", train_result, old_train_result),
                 build_string("valid", validate_result, old_validate_result)
             ))
 
             # early stopping:
             new_validate_result = validate_result
+            new_train_result = train_result
             if old_validate_result:
                 if new_validate_result[0] > old_validate_result[0]:
                     iterations_without_improvement = 0
@@ -103,6 +105,7 @@ class Network:
                 print("early-stopping, {} iterations without improvement!".format(early_stopping))
                 break
             old_validate_result = new_validate_result
+            old_train_result = new_train_result
 
         # finally is used against test_data
         test_result = self.get_accuracy_cost(test_data, reg)
