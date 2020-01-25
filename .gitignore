@@ -1,0 +1,9 @@
+# python shit
+venv/
+__pycache__/
+
+# pycharm shit
+.idea/
+
+# my shit
+numbers/
