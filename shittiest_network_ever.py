@@ -34,8 +34,8 @@ class Network:
         trains the neural network using mini-batch stochastic gradient descent and then test it against test_data
         https://towardsdatascience.com/stochastic-gradient-descent-clearly-explained-53d239905d31
         """
+        result = 0.0
         print("iterations={}, mini_batch_size={}, learning_rate={}".format(iterations, size, rate))
-        new, old = None, None
         for i in range(iterations):
             random.shuffle(train_data)
             mini_batches = [train_data[k:k + size] for k in range(0, len(train_data), size)]
@@ -44,13 +44,13 @@ class Network:
                 self.apply_mini_batch(mini_batch, rate)
 
             if test_every_iteration:
-                new = self.test_network(test_data)
-                print_test_result(new, old, i)
-                old = new
+                result = self.test_network(test_data)
+                print("{}: {}".format(i, result))
 
         if not test_every_iteration:
-            new = self.test_network(test_data)
-            print_test_result(new)
+            result = self.test_network(test_data)
+            print(result)
+        return result
 
     def apply_mini_batch(self, mini_batch, rate):
         """
@@ -167,15 +167,3 @@ def sigmoid(z):
 
 def derivative_sigmoid(z):
     return sigmoid(z) * (1 - sigmoid(z))
-
-
-def print_test_result(new, old=None, i=None):
-    string = ""
-    formatted_new = "{:.2%}".format(new)
-    if i is not None:
-        string += "iteration={:<4}".format(i)
-    string += "test={:<6}".format(formatted_new)
-    if old:
-        diff = "{:+.2%}".format(new - old)
-        string += "{:>9}".format(diff)
-    print(string)
