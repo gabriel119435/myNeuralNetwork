@@ -21,9 +21,10 @@ def load_raw_data():
     return train, validate, test
 
 
-def convert_data_return_percentage(data, percentage):
+def format_data(data, percentage):
     formatted_data = list(zip([x.reshape((784, 1)) for x in data[0]],
                               [vectorized_result(y) for y in data[1]]))
+    random.shuffle(formatted_data)
     return formatted_data[:int(percentage * (len(formatted_data) / 100))]
 
 
@@ -53,10 +54,10 @@ def load_formatted_data(percentage):
     plt.imshow(image, "gray")
     plt.savefig("numbers/{}.png".format(train[1][index]))
 
-    train = convert_data_return_percentage(train, percentage)
-    validate = convert_data_return_percentage(validate, percentage)
-    test = convert_data_return_percentage(test, percentage)
+    train = format_data(train, percentage)
+    validate = format_data(validate, percentage)
+    test = format_data(test, percentage)
 
-    print("train={}, validate={}, test={}\n".format(len(train), len(validate), len(test)))
+    print("train={}, validate={}, test={}".format(len(train), len(validate), len(test)))
 
     return train, validate, test
