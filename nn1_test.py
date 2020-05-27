@@ -1,5 +1,5 @@
 import data_loader
-import shittiest_network_ever
+import nn1
 
 percentage = 100
 layout = [784, 30, 10]
@@ -13,7 +13,7 @@ train_data, validate_data, test_data = data_loader.load_formatted_data(percentag
 times = 10
 avg_result = 0.0
 for _ in range(times):
-    net = shittiest_network_ever.Network(layout)
+    net = nn1.Network(layout)
     avg_result += net.train_test_network(
         train_data, iterations, mini_size_batch, learning_rate, test_data, test_every_iteration) / times
 

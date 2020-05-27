@@ -10,3 +10,9 @@ Basically it implements from scratch a deep neural network using stochastic grad
 It has lots of comments explaining what is what, but it's very similar to the original source code, I only changed some names to adapt source code to my learning experience.
 
 On `numbers/`, you can see some examples analyzed by the NN
+
+`nn1.py` is the simplest one, with 95.18% accuracy
+
+`nn2.py` is the improved one, with 96.61% accuracy
+
+on `nn#_test.py`, you can check some hyper parameters and basic grid search used

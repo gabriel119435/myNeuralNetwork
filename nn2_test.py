@@ -1,6 +1,6 @@
 import numpy as np
 
-import bad_network
+import nn2
 import data_loader
 
 # fixed hyper params
@@ -15,7 +15,7 @@ train_data, validate_data, test_data = data_loader.load_formatted_data(percentag
 def calculate_average_accuracy(times, size, rate, reg):
     average_accuracy = 0.0
     for _ in range(times):
-        net = bad_network.Network(layout)
+        net = nn2.Network(layout)
         average_accuracy += net.train_test_network(
             train_data, iterations, size, rate, test_data, validate_data, reg, early_stopping) / times
     return average_accuracy
