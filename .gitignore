@@ -1,9 +1,6 @@
-# python shit
+# python stuff
 venv/
 __pycache__/
 
-# pycharm shit
+# pycharm stuff
 .idea/
-
-# my shit
-numbers/
