@@ -18,24 +18,6 @@ def _load_raw_data():
     f = gzip.open('entire_data.gz')
     train, validate, test = pickle.load(f, encoding="latin1")
     f.close()
-
-    # printing data structure on input
-    _input = train[0]
-    print("input.size={}".format(len(_input)))
-    print("input.shape={}".format(_input.shape))
-    _one_input = _input[0]
-    print("oneInput.size={}".format(len(_one_input)))
-    print("oneInput.shape={}\n".format(_one_input.shape))
-
-    # printing data structure on output
-    _output = train[1]
-    print("output.size={}".format(len(_output)))
-    print("output.shape={}".format(_output.shape))
-    _one_output = _output[0]
-    print("oneOutput.value={}\n".format(_one_output))
-
-    print("entire dataset:")
-    print("train={}, validate={}, test={}\n".format(len(train[0]), len(validate[0]), len(test[0])))
     return train, validate, test
 
 
@@ -82,16 +64,9 @@ def load_formatted_data(percentage):
     plt.imshow(image, "gray")
     plt.savefig("numbers/{}.png".format(train[1][index]))
 
-    print("percentage={}\n".format(percentage))
-
     train = _format_data_filter_percentage(train, percentage)
     validate = _format_data_filter_percentage(validate, percentage)
     test = _format_data_filter_percentage(test, percentage)
 
-    print("selected dataset:")
-    print("train={}, validate={}, test={}\n".format(len(train), len(validate), len(test)))
+    print("train={} validate={} test={}\n".format(len(train), len(validate), len(test)))
     return train, validate, test
-
-
-# just to test it
-load_formatted_data(1)

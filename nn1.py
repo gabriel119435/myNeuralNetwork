@@ -4,11 +4,16 @@ import numpy as np
 
 
 class Network:
+    """
+    all comments here will be based on a [784, 16, 16, 10] network
+    """
 
     def __init__(self, sizes):
         # [784, 16, 16, 10]
         self.num_layers = len(sizes)
         self.sizes = sizes
+
+        # np.random.randn = random with mean=0 and stdDev=1
 
         # [(16, 1), (16, 1), (10, 1)]
         self.biases = [np.random.randn(y, 1) for y in sizes[1:]]
@@ -21,38 +26,67 @@ class Network:
 
         number_biases = sum(b.flatten().size for b in self.biases)
         number_weights = sum(w.flatten().size for w in self.weights)
-        print("layout={}, biases={}, weights={}".format(list(self.sizes), number_biases, number_weights))
-
-    def feed_network(self, a):
-        # receives (784,1), outputs (10,1)
-        for b, w in zip(self.biases, self.weights):
-            a = sigmoid(np.dot(w, a) + b)
-        return a
+        print("network created with layout={} biases={} weights={}".format(
+            list(self.sizes),
+            number_biases,
+            number_weights)
+        )
 
     def train_test_network(self, train_data, iterations, size, rate, test_data, test_every_iteration):
         """
-        trains the neural network using mini-batch stochastic gradient descent and then test it against test_data
+        trains the neural network using mini-batch stochastic gradient descent and then test it against test_data,
+        returning percentage of correct guesses
         https://towardsdatascience.com/stochastic-gradient-descent-clearly-explained-53d239905d31
         """
-        result = 0.0
-        print("iterations={}, mini_batch_size={}, learning_rate={}".format(iterations, size, rate))
+        acc = 0.0
+        print("iterations={} miniBatch.size={} learningRate={}".format(iterations, size, rate))
+
+        # info about mini batches
+        print("miniBatch.count={}".format(
+            int(len(train_data) / size)
+        ))
+
         for i in range(iterations):
             random.shuffle(train_data)
             mini_batches = [train_data[k:k + size] for k in range(0, len(train_data), size)]
 
             for mini_batch in mini_batches:
-                self.apply_mini_batch(mini_batch, rate)
+                self._apply_mini_batch(mini_batch, rate)
 
             if test_every_iteration:
-                result = self.test_network(test_data)
-                print("{}: {}".format(i, result))
+                acc = self._test_network(test_data)
+                print("{}: {}".format(i, acc))
+            else:
+                print(i)
 
         if not test_every_iteration:
-            result = self.test_network(test_data)
-            print(result)
-        return result
+            acc = self._test_network(test_data)
+            print(acc)
 
-    def apply_mini_batch(self, mini_batch, rate):
+        print("network tested\n")
+        return acc
+
+    def _feed_network(self, a):
+        # receives (784,1), outputs (10,1)
+        for b, w in zip(self.biases, self.weights):
+            a = sigmoid(np.dot(w, a) + b)
+        return a
+
+    def _test_network(self, data):
+        """
+        data is the test data as (input, output)
+        returns how many inputs were correctly categorized from 1(100%) to 0(0%)
+        note the correct result is whichever neuron in the final layer with the highest activation
+        """
+        results = [
+            (
+                np.argmax(self._feed_network(_input)),
+                np.argmax(_output)
+            ) for (_input, _output) in data
+        ]
+        return sum(int(x == y) for (x, y) in results) / len(data)
+
+    def _apply_mini_batch(self, mini_batch, rate):
         """
         upgrades weights and biases according to a single iteration of gradient descent
         proportional to the learning rate
@@ -61,28 +95,42 @@ class Network:
         w_total = [np.zeros(w.shape) for w in self.weights]
 
         # calculates the gradients
-        for input_data, desired_output in mini_batch:
-            b_diff, w_diff = self.backward_prop(input_data, desired_output)
-            b_total = [total + diff for total, diff in zip(b_total, b_diff)]
-            w_total = [total + diff for total, diff in zip(w_total, w_diff)]
+        for _input, _output in mini_batch:
+            # actual gradient!
+            b_diff, w_diff = self._backward_prop(_input, _output)
+
+            b_total = [
+                total + diff
+                for total, diff in zip(b_total, b_diff)
+            ]
+
+            w_total = [
+                total + diff
+                for total, diff in zip(w_total, w_diff)
+            ]
 
         mini_batch_len = len(mini_batch)
 
         # applies the average gradients proportionally to learning_rate
-        self.weights = [old - rate * (total / mini_batch_len)
-                        for old, total in zip(self.weights, w_total)]
-        self.biases = [old - rate * (total / mini_batch_len)
-                       for old, total in zip(self.biases, b_total)]
+        self.weights = [
+            old - rate * (total / mini_batch_len)
+            for old, total in zip(self.weights, w_total)
+        ]
 
-    def backward_prop(self, input_data, desired_output):
-        # return biases_diff and weights_diff as the gradient of cost function to each bias and weight
+        self.biases = [
+            old - rate * (total / mini_batch_len)
+            for old, total in zip(self.biases, b_total)
+        ]
+
+    def _backward_prop(self, _input, _output):
+        # return b_diff and w_diff as the gradient of cost function to each bias and weight
         b_diff = [np.zeros(b.shape) for b in self.biases]
         w_diff = [np.zeros(w.shape) for w in self.weights]
 
         # feed network storing a and z per layer
         # a' = σ(wa+b) = σ(z)
         # a' = σ(z)
-        current_activation = input_data
+        current_activation = _input
         # list to store activations per layer
         a_array = [current_activation]
         # list to store z vector per layer
@@ -94,20 +142,21 @@ class Network:
             a_array.append(current_activation)
 
         '''
+        1. some definitions:
         C = ((a(L)-y)^2)/2
         a(L) = σ(z(L))
         z(L) = w(L).a(L-1) + b(L)
         a(L) = σ(w(L).a(L-1) + b(L))
         a(L-1) = σ(w(L-1).a(L-2) + b(L-1))
         
-        partials:
+        2. some partials:
         dC/da(L)      = a(L)-y
         da(L)/dz(L)   = σ'(z(L))
         dz(L)/db(L)   = 1
         dz(L)/dw(L)   = a(L-1)
         dz(L)/da(L-1) = w(L)
         
-        chain rule:
+        3. some math:
         dC/db(L)   = dC/da(L) * da(L)/dz(L) * dz(L)/db(L)   = (a(L)-y) * σ'(z(L)) * 1      = dC/db(L)
         
         dC/dw(L)   = dC/da(L) * da(L)/dz(L) * dz(L)/dw(L)   = (a(L)-y) * σ'(z(L)) * a(L-1) = dC/db(L) * a(L-1)
@@ -120,8 +169,16 @@ class Network:
         
         dC/dw(L-1) = dC/da(L-1)      * da(L-1)/dz(L-1) * dz(L-1)/dw(L-1) 
                    = dC/db(L) * w(L) * σ'(z(L-1))      * a(L-2)
-                   = dC/db(L-1)                        * a(L-2)
+                   = dC/db(L-1)                        * a(L-2)                            = dC/db(L-1) * a(L-2)
         
+        4. some conclusions:
+        dC/db(L-1) = dC/db(L)     * w(L) * σ'(z(L-1))
+        dC/dw(L-1) = dC/db(L-1)   * a(L-2)
+        =>
+        dC/db(L-1) = dC/db(L)   * stuff1
+        dC/dw(L-1) = dC/db(L-1) * stuff2
+        
+        5. some operations:
         operation            |            actual operation               |    diff value after operation
         set                  |         diff = dC/db(L)                   |    dC/db(L)      
         use                  |         dC/dw(L) = diff * a(L-1)          |    dC/db(L)
@@ -137,7 +194,7 @@ class Network:
         '''
         # first iteration finding dC/dB(L) and dC/dW(L)
         # dC/db(L) = ( a(L) - y) * σ'(z(L)), but in matrix notation
-        diff = (a_array[-1] - desired_output) * derivative_sigmoid(z_array[-1])
+        diff = (a_array[-1] - _output) * derivative_sigmoid(z_array[-1])
         b_diff[-1] = diff
         # dC/dw(L) = dC/db(L) * a(L-1), but in matrix notation
         w_diff[-1] = np.dot(diff, a_array[-2].transpose())
@@ -149,15 +206,6 @@ class Network:
             w_diff[-i] = np.dot(diff, a_array[-i - 1].transpose())
 
         return b_diff, w_diff
-
-    def test_network(self, data):
-        """
-        data is the test data as (inputs, desiredOutputs)
-        returns how many inputs were correctly categorized from 1(100%) to 0(0%)
-        note the correct result is whichever neuron in the final layer with the highest activation
-        """
-        results = [(np.argmax(self.feed_network(x)), np.argmax(y)) for (x, y) in data]
-        return sum(int(x == y) for (x, y) in results) / len(data)
 
 
 def sigmoid(z):
