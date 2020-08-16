@@ -89,7 +89,7 @@ def load_formatted_data(percentage):
     test = _format_data_filter_percentage(test, percentage)
 
     print("selected dataset:")
-    print("train={}, validate={}, test={}".format(len(train), len(validate), len(test)))
+    print("train={}, validate={}, test={}\n".format(len(train), len(validate), len(test)))
     return train, validate, test
 
 
