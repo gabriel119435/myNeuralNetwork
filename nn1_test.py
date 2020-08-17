@@ -20,7 +20,7 @@ def get_avg_acc(times, size, rate):
 
 # variable hyper params
 mini_size_batch = 10
-learning_rate = 3
+learning_rate = 5
 
 print(get_avg_acc(3, mini_size_batch, learning_rate))
-# ~ .95
+# .947
