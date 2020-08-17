@@ -11,8 +11,8 @@ It has lots of comments explaining what is what, but it's very similar to the or
 
 On `numbers/`, you can see some examples analyzed by the NN
 
-`nn1.py` is the simplest one, with 95.18% accuracy
+`nn1.py` is the simplest one, with 95% accuracy
 
-`nn2.py` is the improved one, with 96.61% accuracy
+`nn2.py` is the improved one, with 96.5% accuracy
 
 on `nn#_test.py`, you can check some hyper parameters and basic grid search used
